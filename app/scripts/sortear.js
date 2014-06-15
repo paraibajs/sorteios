@@ -3,7 +3,8 @@ var Sortear = function(){
 	'use strict';
 
 	var atual = 0;
-	var timeout = 0.3;
+	var total = 0;
+	var timeout = 0.1;
 	var target = $('#participants');
 	var elemento = 'li';
 
@@ -12,10 +13,11 @@ var Sortear = function(){
 		target.find('.superactive').remove();
 
 		var max = target.find('li').length - 1;
+		total = max;
 
 		$('#title').find('span').html(' ('+ (max +1) +')');
 
-		pegarRandom(max, function(numero){
+		pegarRandom(max * 3, function(numero){
 			rolagemEntreParticipantes(numero);
 		});
 
@@ -32,6 +34,8 @@ var Sortear = function(){
 
 	function setParticipanteAtivo(sorteado){
 
+		var localTimeout = timeout;
+
 		target.find(elemento).removeClass('active');
 
 		if(atual < sorteado){
@@ -44,9 +48,18 @@ var Sortear = function(){
 
 			atual++;
 
+			if(atual === total + 1){
+				atual = 0;
+				sorteado = sorteado - total;
+			}	
+
+			if(sorteado - atual <= 10){
+				localTimeout = ((timeout * 10) - (timeout * (sorteado - atual)) + timeout);
+			}		
+
 			setTimeout(function(){
 				setParticipanteAtivo(sorteado);
-			}, timeout * 1000);
+			}, localTimeout * 1000);
 			
 		}
 			
@@ -58,9 +71,10 @@ var Sortear = function(){
 		var url = 'http://www.random.org/integers/?num=1&min=0&max='+max+'&col=1&base=10&format=plain&rnd=new';
 
 		$.get(url, function(data){
-			if(callback){
-				callback(parseInt($.trim(data), 10));
-			}
+
+			var resultado = parseInt($.trim(data), 10);
+			callback(resultado);
+			
 		});
 
 	}
